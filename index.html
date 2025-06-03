@@ -99,7 +99,7 @@
     function addEntry() {
       const entry = document.createElement('div');
       entry.className = 'shape-entry';
-      entry.innerHTML = `
+      entry.innerHTML = \`
         <label>Shape</label>
         <select onchange="updateShapeInputs(this)" class="shape-select">
           <option value="rectangle">Rectangle</option>
@@ -112,7 +112,7 @@
         <div class="shape-fields"></div>
         <button type="button" onclick="calculateEntry(this)">Calculate This Shape</button>
         <p class="shape-area">Area: 0.00 m²</p>
-      `;
+      \`;
       entriesDiv.appendChild(entry);
       updateShapeInputs(entry.querySelector('select'));
     }
@@ -156,7 +156,7 @@
         area = (Math.PI * diameter * height + 2 * Math.PI * (diameter / 2) ** 2) / 1000000;
       }
       area *= qty;
-      entry.querySelector('.shape-area').textContent = `Area: ${area.toFixed(2)} m²`;
+      entry.querySelector('.shape-area').textContent = \`Area: \${area.toFixed(2)} m²\`;
       updateTotalArea();
     }
 
@@ -168,51 +168,39 @@
         if (match) total += parseFloat(match[1]);
       });
       totalArea = total;
-      document.getElementById('totalArea').textContent = `${total.toFixed(2)} m²`;
+      document.getElementById('totalArea').textContent = \`\${total.toFixed(2)} m²\`;
     }
 
     function sendData() {
-  const form = document.getElementById('calcForm');
-  const formData = new FormData(form);
-  const entries = [];
+      const form = document.getElementById('calcForm');
+      const formData = new FormData(form);
+      const entries = [];
 
-  document.querySelectorAll('.shape-entry').forEach(entry => {
-    const shape = entry.querySelector('select').value;
-    const qty = entry.querySelector('.qty').value;
-    const areaText = entry.querySelector('.shape-area').textContent;
-    const dimensions = Array.from(entry.querySelectorAll('input')).map(input => input.value).join(', ');
-    entries.push(`Shape: ${shape}, Qty: ${qty}, Dimensions: ${dimensions}, ${areaText}`);
-  });
+      document.querySelectorAll('.shape-entry').forEach(entry => {
+        const shape = entry.querySelector('select').value;
+        const qty = entry.querySelector('.qty').value;
+        const areaText = entry.querySelector('.shape-area').textContent;
+        const dimensions = Array.from(entry.querySelectorAll('input')).map(input => input.value).join(', ');
+        entries.push(\`Shape: \${shape}, Qty: \${qty}, Dimensions: \${dimensions}, \${areaText}\`);
+      });
 
-  const data = {
-    company: formData.get('company'),
-    customer: formData.get('customer'),
-    email: formData.get('email'),
-    tel: formData.get('tel'),
-    instructions: formData.get('instructions'),
-    jobcard: formData.get('jobcard'),
-    enteredBy: formData.get('enteredBy'),
-    entries: entries.join('
-'),
-    totalArea: document.getElementById('totalArea').textContent
-  };
+      const data = {
+        company: formData.get('company'),
+        customer: formData.get('customer'),
+        email: formData.get('email'),
+        tel: formData.get('tel'),
+        instructions: formData.get('instructions'),
+        jobcard: formData.get('jobcard'),
+        enteredBy: formData.get('enteredBy'),
+        entries: entries.join('\n'),
+        totalArea: document.getElementById('totalArea').textContent
+      };
 
-  const mailtoLink = `mailto:sales@fotodesign.co.za?subject=New m² Calculation from ${data.customer}&body=` +
-    encodeURIComponent(`Company: ${data.company}
-Customer: ${data.customer}
-Email: ${data.email}
-Tel: ${data.tel}
-Job Card No: ${data.jobcard}
-Entered By: ${data.enteredBy}
-Instructions: ${data.instructions}
+      const mailtoLink = \`mailto:sales@fotodesign.co.za?subject=New m² Calculation from \${data.customer}&body=\` +
+        encodeURIComponent(\`Company: \${data.company}\nCustomer: \${data.customer}\nEmail: \${data.email}\nTel: \${data.tel}\nJob Card No: \${data.jobcard}\nEntered By: \${data.enteredBy}\nInstructions: \${data.instructions}\n\nEntries:\n\${data.entries}\n\nTotal Area: \${data.totalArea}\`);
 
-Entries:
-${data.entries}
-
-Total Area: ${data.totalArea}`);
-
-  window.location.href = mailtoLink;
-}
+      window.location.href = mailtoLink;
+    }
   </script>
 </body>
 </html>
