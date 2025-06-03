@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fotodesign m² Calculator</title>
+  <style>
+    body {
+      background-color: #1f2937;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: #111827;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    h1, h2 {
+      color: #f97316;
+    }
+    input, select, textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #f97316;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .logo {
+      max-width: 200px;
+      display: block;
+      margin-bottom: 20px;
+    }
+    .shape-entry {
+      border: 1px solid #374151;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="fotodesign_white.png" alt="Fotodesign Logo" class="logo">
+    <h1>Fotodesign m² Calculator</h1>
+    <form id="calcForm">
+      <label>Company Name</label>
+      <input type="text" name="company">
+
+      <label>Customer Name</label>
+      <input type="text" name="customer">
+
+      <label>Customer Email</label>
+      <input type="email" name="email">
+
+      <label>Customer Tel</label>
+      <input type="tel" name="tel">
+
+      <label>Special Instructions</label>
+      <textarea name="instructions"></textarea>
+
+      <label>Job Card No</label>
+      <input type="text" name="jobcard">
+
+      <label>Entered By</label>
+      <select name="enteredBy">
+        <option>John</option>
+        <option>Morne'</option>
+        <option>Anju'</option>
+        <option>Jaylen</option>
+        <option>Llewellyn</option>
+        <option>Katlego</option>
+      </select>
+
+      <h2>Shape Entries</h2>
+      <div id="entries"></div>
+      <button type="button" onclick="addEntry()">+ Add Shape</button>
+
+      <h2>Total Area</h2>
+      <p id="totalArea">0.00 m²</p>
+
+      <button type="button" onclick="sendData()">Send to sales@fotodesign.co.za</button>
+    </form>
+  </div>
+  <script>
+    let entriesDiv = document.getElementById('entries');
+    let totalArea = 0;
+
+    function addEntry() {
+      const entry = document.createElement('div');
+      entry.className = 'shape-entry';
+      entry.innerHTML = \`
+        <label>Shape</label>
+        <select onchange="updateShapeInputs(this)" class="shape-select">
+          <option value="rectangle">Rectangle</option>
+          <option value="circle">Circle</option>
+          <option value="triangle">Triangle</option>
+          <option value="cylinder">Cylinder</option>
+        </select>
+        <label>Quantity</label>
+        <input type="number" class="qty" value="1" min="1">
+        <div class="shape-fields"></div>
+        <button type="button" onclick="calculateEntry(this)">Calculate This Shape</button>
+        <p class="shape-area">Area: 0.00 m²</p>
+      \`;
+      entriesDiv.appendChild(entry);
+      updateShapeInputs(entry.querySelector('select'));
+    }
+
+    function updateShapeInputs(select) {
+      const fieldsDiv = select.parentElement.querySelector('.shape-fields');
+      const shape = select.value;
+      let html = '';
+      if (shape === 'rectangle') {
+        html = 'Length (mm): <input type="number" class="length"> Width (mm): <input type="number" class="width">';
+      } else if (shape === 'circle') {
+        html = 'Diameter (mm): <input type="number" class="diameter">';
+      } else if (shape === 'triangle') {
+        html = 'Base (mm): <input type="number" class="base"> Height (mm): <input type="number" class="height">';
+      } else if (shape === 'cylinder') {
+        html = 'Diameter (mm): <input type="number" class="diameter"> Height (mm): <input type="number" class="height">';
+      }
+      fieldsDiv.innerHTML = html;
+    }
+
+    function calculateEntry(button) {
+      const entry = button.parentElement;
+      const shape = entry.querySelector('select').value;
+      const qty = parseInt(entry.querySelector('.qty').value) || 1;
+      let area = 0;
+      if (shape === 'rectangle') {
+        const length = entry.querySelector('.length').value;
+        const width = entry.querySelector('.width').value;
+        area = (length * width) / 1000000;
+      } else if (shape === 'circle') {
+        const diameter = entry.querySelector('.diameter').value;
+        const r = diameter / 2;
+        area = (Math.PI * r * r) / 1000000;
+      } else if (shape === 'triangle') {
+        const base = entry.querySelector('.base').value;
+        const height = entry.querySelector('.height').value;
+        area = (base * height) / 2000000;
+      } else if (shape === 'cylinder') {
+        const diameter = entry.querySelector('.diameter').value;
+        const height = entry.querySelector('.height').value;
+        area = (Math.PI * diameter * height + 2 * Math.PI * (diameter / 2) ** 2) / 1000000;
+      }
+      area *= qty;
+      entry.querySelector('.shape-area').textContent = \`Area: \${area.toFixed(2)} m²\`;
+      updateTotalArea();
+    }
+
+    function updateTotalArea() {
+      const allAreas = document.querySelectorAll('.shape-area');
+      let total = 0;
+      allAreas.forEach(p => {
+        const match = p.textContent.match(/([\d\.]+)/);
+        if (match) total += parseFloat(match[1]);
+      });
+      totalArea = total;
+      document.getElementById('totalArea').textContent = \`\${total.toFixed(2)} m²\`;
+    }
+
+    function sendData() {
+      const form = document.getElementById('calcForm');
+      const formData = new FormData(form);
+      const entries = [];
+
+      document.querySelectorAll('.shape-entry').forEach(entry => {
+        const shape = entry.querySelector('select').value;
+        const qty = entry.querySelector('.qty').value;
+        const areaText = entry.querySelector('.shape-area').textContent;
+        const dimensions = Array.from(entry.querySelectorAll('input')).map(input => input.value).join(', ');
+        entries.push(\`Shape: \${shape}, Qty: \${qty}, Dimensions: \${dimensions}, \${areaText}\`);
+      });
+
+      const data = {
+        company: formData.get('company'),
+        customer: formData.get('customer'),
+        email: formData.get('email'),
+        tel: formData.get('tel'),
+        instructions: formData.get('instructions'),
+        jobcard: formData.get('jobcard'),
+        enteredBy: formData.get('enteredBy'),
+        entries: entries.join('\n'),
+        totalArea: document.getElementById('totalArea').textContent
+      };
+
+      const mailtoLink = \`mailto:sales@fotodesign.co.za?subject=New m² Calculation from \${data.customer}&body=\` +
+        encodeURIComponent(\`Company: \${data.company}\nCustomer: \${data.customer}\nEmail: \${data.email}\nTel: \${data.tel}\nJob Card No: \${data.jobcard}\nEntered By: \${data.enteredBy}\nInstructions: \${data.instructions}\n\nEntries:\n\${data.entries}\n\nTotal Area: \${data.totalArea}\`);
+
+      window.location.href = mailtoLink;
+    }
+  </script>
+</body>
+</html>
