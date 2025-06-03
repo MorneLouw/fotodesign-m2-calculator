@@ -107,6 +107,8 @@
           <option value="triangle">Triangle</option>
           <option value="cylinder">Cylinder</option>
         </select>
+        <label>Quantity</label>
+        <input type="number" class="qty" value="1" min="1">
         <div class="shape-fields"></div>
         <button type="button" onclick="calculateEntry(this)">Calculate This Shape</button>
         <p class="shape-area">Area: 0.00 m²</p>
@@ -134,6 +136,7 @@
     function calculateEntry(button) {
       const entry = button.parentElement;
       const shape = entry.querySelector('select').value;
+      const qty = parseInt(entry.querySelector('.qty').value) || 1;
       let area = 0;
       if (shape === 'rectangle') {
         const length = entry.querySelector('.length').value;
@@ -152,6 +155,7 @@
         const height = entry.querySelector('.height').value;
         area = (Math.PI * diameter * height + 2 * Math.PI * (diameter / 2) ** 2) / 1000000;
       }
+      area *= qty;
       entry.querySelector('.shape-area').textContent = `Area: ${area.toFixed(2)} m²`;
       updateTotalArea();
     }
@@ -168,8 +172,47 @@
     }
 
     function sendData() {
-      alert("Feature to email 'sales@fotodesign.co.za' will be implemented in backend.");
-    }
+  const form = document.getElementById('calcForm');
+  const formData = new FormData(form);
+  const entries = [];
+
+  document.querySelectorAll('.shape-entry').forEach(entry => {
+    const shape = entry.querySelector('select').value;
+    const qty = entry.querySelector('.qty').value;
+    const areaText = entry.querySelector('.shape-area').textContent;
+    const dimensions = Array.from(entry.querySelectorAll('input')).map(input => input.value).join(', ');
+    entries.push(`Shape: ${shape}, Qty: ${qty}, Dimensions: ${dimensions}, ${areaText}`);
+  });
+
+  const data = {
+    company: formData.get('company'),
+    customer: formData.get('customer'),
+    email: formData.get('email'),
+    tel: formData.get('tel'),
+    instructions: formData.get('instructions'),
+    jobcard: formData.get('jobcard'),
+    enteredBy: formData.get('enteredBy'),
+    entries: entries.join('
+'),
+    totalArea: document.getElementById('totalArea').textContent
+  };
+
+  const mailtoLink = `mailto:sales@fotodesign.co.za?subject=New m² Calculation from ${data.customer}&body=` +
+    encodeURIComponent(`Company: ${data.company}
+Customer: ${data.customer}
+Email: ${data.email}
+Tel: ${data.tel}
+Job Card No: ${data.jobcard}
+Entered By: ${data.enteredBy}
+Instructions: ${data.instructions}
+
+Entries:
+${data.entries}
+
+Total Area: ${data.totalArea}`);
+
+  window.location.href = mailtoLink;
+}
   </script>
 </body>
 </html>
