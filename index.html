@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fotodesign m² Calculator</title>
+  <style>
+    body {
+      background-color: #1f2937;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: #111827;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    h1, h2 {
+      color: #f97316;
+    }
+    input, select, textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #f97316;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .logo {
+      max-width: 200px;
+      display: block;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="fotodesign_logo.png" alt="Fotodesign Logo" class="logo">
+    <h1>Fotodesign m² Calculator</h1>
+    <form id="calcForm">
+      <label>Company Name</label>
+      <input type="text" name="company">
+
+      <label>Customer Name</label>
+      <input type="text" name="customer">
+
+      <label>Customer Email</label>
+      <input type="email" name="email">
+
+      <label>Customer Tel</label>
+      <input type="tel" name="tel">
+
+      <label>Special Instructions</label>
+      <textarea name="instructions"></textarea>
+
+      <label>Job Card No</label>
+      <input type="text" name="jobcard">
+
+      <label>Entered By</label>
+      <select name="enteredBy">
+        <option>John</option>
+        <option>Morne'</option>
+        <option>Anju'</option>
+        <option>Jaylen</option>
+        <option>Llewellyn</option>
+        <option>Katlego</option>
+      </select>
+
+      <h2>Shape & Measurements (mm)</h2>
+      <select name="shape" id="shape">
+        <option value="rectangle">Rectangle</option>
+        <option value="circle">Circle</option>
+        <option value="triangle">Triangle</option>
+        <option value="cylinder">Cylinder</option>
+      </select>
+      <div id="shapeInputs"></div>
+
+      <button type="button" onclick="calculateArea()">Calculate & Send</button>
+    </form>
+    <p id="result"></p>
+  </div>
+  <script>
+    const shapeInputsDiv = document.getElementById('shapeInputs');
+    const shapeSelector = document.getElementById('shape');
+
+    shapeSelector.addEventListener('change', updateInputs);
+    updateInputs();
+
+    function updateInputs() {
+      const shape = shapeSelector.value;
+      let html = '';
+      switch (shape) {
+        case 'rectangle':
+          html = 'Length (mm): <input type="number" name="length"> Width (mm): <input type="number" name="width">';
+          break;
+        case 'circle':
+          html = 'Diameter (mm): <input type="number" name="diameter">';
+          break;
+        case 'triangle':
+          html = 'Base (mm): <input type="number" name="base"> Height (mm): <input type="number" name="height">';
+          break;
+        case 'cylinder':
+          html = 'Diameter (mm): <input type="number" name="diameter"> Height (mm): <input type="number" name="height">';
+          break;
+      }
+      shapeInputsDiv.innerHTML = html;
+    }
+
+    function calculateArea() {
+      const form = document.forms['calcForm'];
+      const shape = form['shape'].value;
+      let area = 0;
+      switch (shape) {
+        case 'rectangle':
+          area = (form['length'].value * form['width'].value) / 1000000;
+          break;
+        case 'circle':
+          let r = form['diameter'].value / 2;
+          area = (Math.PI * r * r) / 1000000;
+          break;
+        case 'triangle':
+          area = (form['base'].value * form['height'].value) / 2000000;
+          break;
+        case 'cylinder':
+          let d = form['diameter'].value;
+          let h = form['height'].value;
+          area = (Math.PI * d * h + 2 * Math.PI * (d / 2) * (d / 2)) / 1000000;
+          break;
+      }
+      document.getElementById('result').textContent = `Total Area: ${area.toFixed(2)} m²`;
+    }
+  </script>
+</body>
+</html>
