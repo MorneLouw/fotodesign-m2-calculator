@@ -41,11 +41,17 @@
       display: block;
       margin-bottom: 20px;
     }
+    .shape-entry {
+      border: 1px solid #374151;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="fotodesign_logo.png" alt="Fotodesign Logo" class="logo">
+    <img src="fotodesign_white.png" alt="Fotodesign Logo" class="logo">
     <h1>Fotodesign m² Calculator</h1>
     <form id="calcForm">
       <label>Company Name</label>
@@ -76,68 +82,93 @@
         <option>Katlego</option>
       </select>
 
-      <h2>Shape & Measurements (mm)</h2>
-      <select name="shape" id="shape">
-        <option value="rectangle">Rectangle</option>
-        <option value="circle">Circle</option>
-        <option value="triangle">Triangle</option>
-        <option value="cylinder">Cylinder</option>
-      </select>
-      <div id="shapeInputs"></div>
+      <h2>Shape Entries</h2>
+      <div id="entries"></div>
+      <button type="button" onclick="addEntry()">+ Add Shape</button>
 
-      <button type="button" onclick="calculateArea()">Calculate & Send</button>
+      <h2>Total Area</h2>
+      <p id="totalArea">0.00 m²</p>
+
+      <button type="button" onclick="sendData()">Send to sales@fotodesign.co.za</button>
     </form>
-    <p id="result"></p>
   </div>
   <script>
-    const shapeInputsDiv = document.getElementById('shapeInputs');
-    const shapeSelector = document.getElementById('shape');
+    let entriesDiv = document.getElementById('entries');
+    let totalArea = 0;
 
-    shapeSelector.addEventListener('change', updateInputs);
-    updateInputs();
-
-    function updateInputs() {
-      const shape = shapeSelector.value;
-      let html = '';
-      switch (shape) {
-        case 'rectangle':
-          html = 'Length (mm): <input type="number" name="length"> Width (mm): <input type="number" name="width">';
-          break;
-        case 'circle':
-          html = 'Diameter (mm): <input type="number" name="diameter">';
-          break;
-        case 'triangle':
-          html = 'Base (mm): <input type="number" name="base"> Height (mm): <input type="number" name="height">';
-          break;
-        case 'cylinder':
-          html = 'Diameter (mm): <input type="number" name="diameter"> Height (mm): <input type="number" name="height">';
-          break;
-      }
-      shapeInputsDiv.innerHTML = html;
+    function addEntry() {
+      const entry = document.createElement('div');
+      entry.className = 'shape-entry';
+      entry.innerHTML = `
+        <label>Shape</label>
+        <select onchange="updateShapeInputs(this)" class="shape-select">
+          <option value="rectangle">Rectangle</option>
+          <option value="circle">Circle</option>
+          <option value="triangle">Triangle</option>
+          <option value="cylinder">Cylinder</option>
+        </select>
+        <div class="shape-fields"></div>
+        <button type="button" onclick="calculateEntry(this)">Calculate This Shape</button>
+        <p class="shape-area">Area: 0.00 m²</p>
+      `;
+      entriesDiv.appendChild(entry);
+      updateShapeInputs(entry.querySelector('select'));
     }
 
-    function calculateArea() {
-      const form = document.forms['calcForm'];
-      const shape = form['shape'].value;
-      let area = 0;
-      switch (shape) {
-        case 'rectangle':
-          area = (form['length'].value * form['width'].value) / 1000000;
-          break;
-        case 'circle':
-          let r = form['diameter'].value / 2;
-          area = (Math.PI * r * r) / 1000000;
-          break;
-        case 'triangle':
-          area = (form['base'].value * form['height'].value) / 2000000;
-          break;
-        case 'cylinder':
-          let d = form['diameter'].value;
-          let h = form['height'].value;
-          area = (Math.PI * d * h + 2 * Math.PI * (d / 2) * (d / 2)) / 1000000;
-          break;
+    function updateShapeInputs(select) {
+      const fieldsDiv = select.parentElement.querySelector('.shape-fields');
+      const shape = select.value;
+      let html = '';
+      if (shape === 'rectangle') {
+        html = 'Length (mm): <input type="number" class="length"> Width (mm): <input type="number" class="width">';
+      } else if (shape === 'circle') {
+        html = 'Diameter (mm): <input type="number" class="diameter">';
+      } else if (shape === 'triangle') {
+        html = 'Base (mm): <input type="number" class="base"> Height (mm): <input type="number" class="height">';
+      } else if (shape === 'cylinder') {
+        html = 'Diameter (mm): <input type="number" class="diameter"> Height (mm): <input type="number" class="height">';
       }
-      document.getElementById('result').textContent = `Total Area: ${area.toFixed(2)} m²`;
+      fieldsDiv.innerHTML = html;
+    }
+
+    function calculateEntry(button) {
+      const entry = button.parentElement;
+      const shape = entry.querySelector('select').value;
+      let area = 0;
+      if (shape === 'rectangle') {
+        const length = entry.querySelector('.length').value;
+        const width = entry.querySelector('.width').value;
+        area = (length * width) / 1000000;
+      } else if (shape === 'circle') {
+        const diameter = entry.querySelector('.diameter').value;
+        const r = diameter / 2;
+        area = (Math.PI * r * r) / 1000000;
+      } else if (shape === 'triangle') {
+        const base = entry.querySelector('.base').value;
+        const height = entry.querySelector('.height').value;
+        area = (base * height) / 2000000;
+      } else if (shape === 'cylinder') {
+        const diameter = entry.querySelector('.diameter').value;
+        const height = entry.querySelector('.height').value;
+        area = (Math.PI * diameter * height + 2 * Math.PI * (diameter / 2) ** 2) / 1000000;
+      }
+      entry.querySelector('.shape-area').textContent = `Area: ${area.toFixed(2)} m²`;
+      updateTotalArea();
+    }
+
+    function updateTotalArea() {
+      const allAreas = document.querySelectorAll('.shape-area');
+      let total = 0;
+      allAreas.forEach(p => {
+        const match = p.textContent.match(/([\d\.]+)/);
+        if (match) total += parseFloat(match[1]);
+      });
+      totalArea = total;
+      document.getElementById('totalArea').textContent = `${total.toFixed(2)} m²`;
+    }
+
+    function sendData() {
+      alert("Feature to email 'sales@fotodesign.co.za' will be implemented in backend.");
     }
   </script>
 </body>
